@@ -1,0 +1,225 @@
+{
+  "name": "AI CV Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a CV formatter.\n\nABSOLUTE RULES (MUST FOLLOW):\n- Use ONLY information explicitly present in the INPUT FIELDS below.\n- NEVER invent or assume anything (no company type, no extra duties, no dates, no degrees, no extra skills).\n- If something is unclear/vague, DO NOT “interpret”. Either keep it minimal or omit it.\n- Output must be ATS-friendly, concise, 1-page.\n- If too long: reduce bullets first, then drop Certifications, then drop Languages.\n\nNORMALIZATION ALLOWED (ONLY):\n- Fix capitalization (sentence/title case).\n- Fix minor spelling/grammar WITHOUT adding meaning.\n- Trim spaces and remove duplicates.\n- Target Role: fix spelling and convert to Title Case (e.g., \"ai auotmation\" → \"AI Automation\").\n\n\nOUTPUT:\nReturn STRICT JSON ONLY. No markdown. No commentary. No extra keys.\n\nINPUT FIELDS (raw user text):\nFull Name: {{ $json[\"Full Name\"] }}\nEmail: {{ $json[\"Email\"] }}\nPhone: {{ $json[\"Phone\"] }}\nLocation: {{ $json[\"Location\"] }}\nLinks: {{ $json[\"Links (LinkedIn / GitHub / Website)\"] }}\nTarget Role: {{ $json[\"Target Role / Job Title\"] }}\nSkills (free text): {{ $json[\"Skills\"] }}\nEducation (free text): {{ $json[\"Education\"] }}\nExperience (free text): {{ $json[\"Experience\"] }}\nProjects (free text): {{ $json[\"Projects\"] }}\nCertifications (free text): {{ $json[\"Certifications\"] }}\nLanguages (free text): {{ $json[\"Languages\"] }}\n\nSKILLS RULES (IMPORTANT):\n- Extract skills from Skills text ONLY.\n- Remove human languages from skills ALWAYS (e.g., English, Arabic, Armenian, Chinese, French).\n- Remove weak items like “Math” unless explicitly required by the target role (default: remove).\n- Keep “Problem Solving” as a valid skill.\n- Deduplicate and capitalize properly (e.g., github -> GitHub).\n\nLANGUAGES:\n- Extract languages ONLY from Languages field (not from skills).\n- Capitalize properly.\n\nEXPERIENCE / PROJECTS / EDUCATION:\n- Convert the user’s free text into structured entries.\n- Rephrase ONLY for grammar/clarity (same meaning).\n- If a bullet would require guessing, DROP that bullet/entry.\n- Projects: if only a project sentence/name is present, keep name and leave bullets empty (do not invent).\n- Education: keep school/degree/dates only if explicitly present; never guess missing parts.\n- If an experience entry has role/company/dates but no bullets, create ONE bullet by grammatically rewriting the user's text only.\n\n\nLINKS:\n- Extract links/handles from Links text into an array. Keep as-is.\n\nJSON SCHEMA (must match):\n{\n  \"header\": {\"name\":\"\",\"email\":\"\",\"phone\":\"\",\"location\":\"\",\"links\":[]},\n  \"target_role\":\"\",\n  \"skills\":[],\n  \"work_experience\":[{\"company\":\"\",\"role\":\"\",\"dates\":\"\",\"bullets\":[]}],\n  \"projects\":[{\"name\":\"\",\"tech\":\"\",\"bullets\":[]}],\n  \"education\":[{\"degree\":\"\",\"school\":\"\",\"dates\":\"\",\"details\":\"\"}],\n  \"certifications\":[],\n  \"languages\":[]\n}\n",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        -192,
+        -48
+      ],
+      "id": "e5e51945-d78e-4251-8ce3-a6e8c2ded1a0",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-oss-20b",
+          "mode": "list",
+          "cachedResultName": "openai/gpt-oss-20b"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        144
+      ],
+      "id": "023b99d0-a23e-4faa-89e9-e1ec1504653c",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "formTitle": "AI CV Generator",
+        "formDescription": "Fill the form to generate your CV.",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "Full Name",
+              "fieldLabel": "Full Name",
+              "requiredField": true
+            },
+            {
+              "fieldName": "Email",
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldName": "Target Role / Job Title",
+              "fieldLabel": "Target Role / Job Title",
+              "requiredField": true
+            },
+            {
+              "fieldName": "Skills",
+              "fieldLabel": "Skills",
+              "fieldType": "textarea",
+              "placeholder": "Python, SQL, n8n, React, etc.",
+              "requiredField": true
+            },
+            {
+              "fieldName": "Education",
+              "fieldLabel": "Education",
+              "fieldType": "textarea",
+              "placeholder": "Degree, University, Dates",
+              "requiredField": true
+            },
+            {
+              "fieldName": "Experience",
+              "fieldLabel": "Experience",
+              "fieldType": "textarea",
+              "placeholder": "Company | Role | Dates | Bullet points"
+            },
+            {
+              "fieldName": "Projects",
+              "fieldLabel": "Projects",
+              "fieldType": "textarea",
+              "placeholder": "Project | Tech | Bullet points"
+            },
+            {
+              "fieldName": "Phone",
+              "fieldLabel": "Phone"
+            },
+            {
+              "fieldName": "Location",
+              "fieldLabel": "Location"
+            },
+            {
+              "fieldName": "Links (LinkedIn / GitHub / Website)",
+              "fieldLabel": "Links (LinkedIn / GitHub / Website)",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldName": "Certifications",
+              "fieldLabel": "Certifications",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldName": "Languages",
+              "fieldLabel": "Languages"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -384,
+        -48
+      ],
+      "id": "5f816282-0c85-43a2-8ac4-1448c2e27048",
+      "name": "Form - CV Input",
+      "webhookId": "5125cc4f-fc04-4035-a869-087cb0d8d01c"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Form - CV Input').item.json.Email }}",
+        "subject": "Your CV",
+        "message": "=<h1>Your CV is below.</h1>\n\n{{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        -48
+      ],
+      "id": "40fb9d1a-9ed1-4e5e-97b2-b8c81d694309",
+      "name": "Send CV",
+      "webhookId": "054d4158-a169-4ae5-833d-a5cc06fe1151"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "02bc276a-8104-46f3-ae5f-3bbb5c45801f",
+              "name": "html",
+              "value": "=<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\">\n<title>CV</title>\n<style>\nbody { font-family: Arial, sans-serif; font-size: 11px; color: #000; line-height: 1.25; }\nh1 { font-size: 20px; margin: 0; }\nh2 { font-size: 13px; margin: 10px 0 4px; border-bottom: 1px solid #ddd; padding-bottom: 2px; }\np { margin: 2px 0; }\nul { margin: 4px 0 8px 16px; padding: 0; }\nli { margin: 2px 0; }\n.small { color:#222; }\n</style>\n</head>\n<body>\n\n<h1>{{ JSON.parse($json.text).header.name }}</h1>\n<p class=\"small\">\n{{ JSON.parse($json.text).header.email }}\n{{ JSON.parse($json.text).header.phone ? \" | \" + JSON.parse($json.text).header.phone : \"\" }}\n{{ JSON.parse($json.text).header.location ? \" | \" + JSON.parse($json.text).header.location : \"\" }}\n</p>\n{{ (JSON.parse($json.text).header.links && JSON.parse($json.text).header.links.length) ? \"<p class='small'>\" + JSON.parse($json.text).header.links.join(\" | \") + \"</p>\" : \"\" }}\n\n{{ JSON.parse($json.text).target_role ? \"<h2>Target Role</h2><p>\" + JSON.parse($json.text).target_role + \"</p>\" : \"\" }}\n\n{{ (JSON.parse($json.text).skills && JSON.parse($json.text).skills.length) ? \"<h2>Skills</h2><p>\" + JSON.parse($json.text).skills.join(\", \") + \"</p>\" : \"\" }}\n\n{{ (JSON.parse($json.text).work_experience && JSON.parse($json.text).work_experience.length && (JSON.parse($json.text).work_experience[0].company || JSON.parse($json.text).work_experience[0].role || (JSON.parse($json.text).work_experience[0].bullets && JSON.parse($json.text).work_experience[0].bullets.length))) \n? \"<h2>Work Experience</h2>\" + JSON.parse($json.text).work_experience.map(w => \"<p><b>\" + (w.role||\"\") + \"</b>\" + (w.company ? \" — \" + w.company : \"\") + (w.dates ? \" (\" + w.dates + \")\" : \"\") + \"</p>\" + ((w.bullets && w.bullets.length) ? \"<ul>\" + w.bullets.map(b => \"<li>\" + b + \"</li>\").join(\"\") + \"</ul>\" : \"\")).join(\"\")\n: \"\" }}\n\n{{ (JSON.parse($json.text).projects && JSON.parse($json.text).projects.length && (JSON.parse($json.text).projects[0].name || (JSON.parse($json.text).projects[0].bullets && JSON.parse($json.text).projects[0].bullets.length))) \n? \"<h2>Projects</h2>\" + JSON.parse($json.text).projects.map(p => \"<p><b>\" + (p.name||\"\") + \"</b>\" + (p.tech ? \" — \" + p.tech : \"\") + \"</p>\" + ((p.bullets && p.bullets.length) ? \"<ul>\" + p.bullets.map(b => \"<li>\" + b + \"</li>\").join(\"\") + \"</ul>\" : \"\")).join(\"\")\n: \"\" }}\n\n{{ (JSON.parse($json.text).education && JSON.parse($json.text).education.length && (JSON.parse($json.text).education[0].degree || JSON.parse($json.text).education[0].school || JSON.parse($json.text).education[0].details)) \n? \"<h2>Education</h2>\" + JSON.parse($json.text).education.map(e => \"<p><b>\" + (e.degree||\"\") + \"</b>\" + (e.school ? \" — \" + e.school : \"\") + (e.dates ? \" (\" + e.dates + \")\" : \"\") + (e.details ? \"<br/>\" + e.details : \"\") + \"</p>\").join(\"\")\n: \"\" }}\n\n{{ (JSON.parse($json.text).certifications && JSON.parse($json.text).certifications.length) ? \"<h2>Certifications</h2><ul>\" + JSON.parse($json.text).certifications.map(c => \"<li>\" + c + \"</li>\").join(\"\") + \"</ul>\" : \"\" }}\n\n{{ (JSON.parse($json.text).languages && JSON.parse($json.text).languages.length) ? \"<h2>Languages</h2><p>\" + JSON.parse($json.text).languages.join(\", \") + \"</p>\" : \"\" }}\n\n</body>\n</html>\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        -48
+      ],
+      "id": "0cb25a70-6f98-43a5-b925-739ce115790e",
+      "name": "Build Email Body (HTML)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Build Email Body (HTML)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form - CV Input": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Email Body (HTML)": {
+      "main": [
+        [
+          {
+            "node": "Send CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "d0664fd7-9e71-485b-a803-654dda0bcec0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "41e039cedb3a36a88c7cb06e1c01ecdba11906eba63c30992aded5ab7e47dc72"
+  },
+  "id": "PZR1fBcbMe2VcpnN",
+  "tags": []
+}
