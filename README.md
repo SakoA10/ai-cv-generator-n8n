@@ -3,6 +3,9 @@
 A real-world CV generator built with n8n and OpenAI.
 The user fills a form, the AI cleans and improves the content (without inventing facts), and the CV is emailed automatically.
 
+## Flow
+Form submission → OpenAI cleans & structures content → HTML CV built → emailed automatically
+
 ## What the AI Does
 
 - Improves wording and fixes grammar (same meaning only)
